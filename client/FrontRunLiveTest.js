@@ -13,18 +13,18 @@ require('dotenv').config();
 prompt.start();
 
 var provider = new HDWalletProvider(mnemonic, process.env.MORALIS_URL_TESTNET);
+const web3 = new Web3 (provider);
+let BUSD = "0x78867bbeef44f2326bf8ddd1941a4439382ef2a7";
+let address = null;
 
 const init = async() => {
     let weth = null;
     let pancakeswaprouter = null;
     let pancakefact = null;
     let firstConfirm = 0;
-    let BUSD = "0x78867bbeef44f2326bf8ddd1941a4439382ef2a7";
 
-    const web3 = new Web3 (provider);
+    address = await web3.eth.getAccounts();
     const id = await web3.eth.net.getId();
-    const address = await web3.eth.getAccounts();
-    
     const weth_contract = new web3.eth.Contract(
         WETH,
         "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd"
@@ -33,9 +33,55 @@ const init = async() => {
 
     // get the balance of the current testnet account
     const account_balance = await web3.eth.getBalance(address[0]);
+    const account_two_balance = await web3.eth.getBalance(address[2]);
     console.log(address[0]);
+    console.log(address[1]);
     console.log("Account Balance:-",account_balance)
+    console.log("Account two Balance:-",account_two_balance)
     console.log("Weth Balance:-",weth_totalBalance);
+    //Carry out the swap
+    //swapToken();
+    sendTrx();
+    sendTTrx();
 }
 
+const swapToken = async () => {
+    console.log(address[0]);
+    let router = new web3.eth.Contract(
+        PancakeRouter,
+        "0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3"
+    );
+    try {
+        let swapBUSD = await router.methods.swapETHForExactTokens(
+            0,
+            ["0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd",BUSD],
+            address[0],
+            Math.floor(Date.now() / 1000) + 60 * 10).send({from:address[0],value:new BN(0.001),gas:300000,gasPrice:null});
+            console.log("Swap Report:-",swapBUSD);
+    } catch (err) {
+        console.error(err);
+        
+    }
+
+}
+const sendTrx = async () => {
+    try {
+        let send = await web3.eth.sendTransaction({from:address[0],to:address[3],value:web3.utils.toWei('0.01','ether')});
+    console.log("Send Trnx:-",send);
+    } catch (error){
+        console.error(error);
+        
+    }
+    
+}
+const sendTTrx = async () => {
+    try {
+        let send = await web3.eth.sendTransaction({from:address[1],to:address[3],value:web3.utils.toWei('0.01','ether'),gasPrice:200000});
+    console.log("Send Two Trnx:-",send);
+    } catch (error){
+        console.error(error);
+        
+    }
+    
+}
 init();
