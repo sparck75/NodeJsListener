@@ -21,7 +21,7 @@ contract("Flashswap Test",(accounts)=> {
             [weth.address,BUSD],
             accounts[0],
             Math.floor(Date.now() / 1000) + 60 * 10,
-            {value:2,gas:300000,gasPrice:null}
+            {value:2,gas:200000,gasPrice:null}
         ).then(async()=> {
             firstConfirm+= 1;
             console.log("Transaction number:-",firstConfirm)
@@ -34,7 +34,7 @@ contract("Flashswap Test",(accounts)=> {
             [weth.address,BUSD],
             accounts[1],
             Math.floor(Date.now() / 1000) + 60 * 10,
-            {from:accounts[1],value:1,gas:30000000,gasPrice:null}
+            {from:accounts[1],value:1,gas:5000000,gasPrice:null}
         ).then(async()=> {
             firstConfirm+= 1;
             console.log("2nd Transaction number:-",firstConfirm)
