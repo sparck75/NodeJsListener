@@ -39,12 +39,20 @@ const init = async() => {
     console.log("Account Balance:-",account_balance)
     console.log("Account two Balance:-",account_two_balance)
     console.log("Weth Balance:-",weth_totalBalance);
+    // get GasPrice
+    const gasvPrice = await web3.eth.getGasPrice();
+    console.log("Estimated GasPrice:-",web3.utils.fromWei(gasvPrice, 'ether'));
+       
     //Carry out the swap
     //swapToken();
     sendTrx();
-    sendTTrx();
+    
+    sleep(1000).then(() =>{sendTTrx()})
+    
 }
-
+const sleep  = (ms) => {
+    return new Promise(resolve => setTimeout(() => resolve(), ms))
+}
 const swapToken = async () => {
     console.log(address[0]);
     let router = new web3.eth.Contract(
@@ -66,7 +74,7 @@ const swapToken = async () => {
 }
 const sendTrx = async () => {
     try {
-        let send = await web3.eth.sendTransaction({from:address[0],to:address[3],value:web3.utils.toWei('0.01','ether')});
+        let send = await web3.eth.sendTransaction({from:address[3],to:address[1],value:web3.utils.toWei('0.01','ether')});
     console.log("Send Trnx:-",send);
     } catch (error){
         console.error(error);
@@ -76,7 +84,7 @@ const sendTrx = async () => {
 }
 const sendTTrx = async () => {
     try {
-        let send = await web3.eth.sendTransaction({from:address[1],to:address[3],value:web3.utils.toWei('0.01','ether'),gasPrice:200000});
+        let send = await web3.eth.sendTransaction({from:address[1],to:address[3],value:web3.utils.toWei('0.01','ether'),gas:3000000,gasPrice:150000000000});
     console.log("Send Two Trnx:-",send);
     } catch (error){
         console.error(error);
