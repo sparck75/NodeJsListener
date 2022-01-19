@@ -30,7 +30,7 @@ const init = async () => {
         // If transaction is not valid, simply return
         if (!valid) return
 
-       // if (WALLET_TO == Router ) {
+       // 
           console.log("_-_-_-_-_-_-_-_-__-_-_-_-_-_-_-_-__-_-_-_-_-_-_-_-__-_-_-_-_-_-_-_-__-_-_-_-_-_-_-_-_");
           console.log('Found incoming Ether transaction from ' + WALLET_FROM + ' to ' + WALLET_TO);
           console.log('Transaction value is: ' + ethToWei(AMOUNT));
@@ -40,10 +40,12 @@ const init = async () => {
           console.log("The transactions Input",trx.input);      
           //con
           //Decode Transactions
-          let xinput = trx.input;
-          let decodeInput = web3.eth.abi.decodeParameters(["uint256","address[]","address","uint256"],xinput.substr(10,xinput.length));
-          console.log("Input Result:-",decodeInput);
-       // } else {
+          if (WALLET_TO == Router ) {
+              let xinput = trx.input;
+              let decodeInput = web3.eth.abi.decodeParameters(["uint256","address[]","address","uint256"],xinput.substr(10,xinput.length));
+              console.log("Input Result:-",decodeInput);
+         }
+       // else {
           //console.log('Transaction hash is: ' + WALLET_TO + '\n');
        // }
        
