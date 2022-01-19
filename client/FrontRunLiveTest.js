@@ -325,7 +325,7 @@ const swapTwoToken = async () => {
         return BUSD_ERC20.methods.approve("0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3",amountIn).call({from:address[3]}).then(async result=> {
             console.log("Approve Contract:-",result);
             let swapBUSDToBNB = await router.methods.swapExactTokensForETH(
-                amountIn.toString(),
+                amountIn,
                 0,
                 [BUSD,"0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd"],
                 address[3],
