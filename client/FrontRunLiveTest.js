@@ -240,7 +240,7 @@ const web3 = new Web3 (provider);
 let BUSD = "0x78867bbeef44f2326bf8ddd1941a4439382ef2a7";
 let address = null;
 
-const init = async() => {
+module.exports.initiate = async() => {
     let weth = null;
     let pancakeswaprouter = null;
     let pancakefact = null;
@@ -267,18 +267,18 @@ const init = async() => {
     console.log("Estimated GasPrice:-",web3.utils.fromWei(gasvPrice, 'ether'));
        
     //Carry out the swap
-    swapToken();
+    //swapToken();
     
     //sendTrx();
     
-    sleep(1000).then(() =>{swapTwoToken()})
+    //sleep(1000).then(() =>{swapTwoToken()})
     
 }
 const sleep  = (ms) => {
     return new Promise(resolve => setTimeout(() => resolve(), ms))
 }
 const swapToken = async () => {
-    console.log(address[0]);
+    console.log("Address",address[1]);
     let router = new web3.eth.Contract(
         PancakeRouter,
         "0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3"
@@ -337,6 +337,7 @@ const swapTwoToken = async () => {
     }
 
 }
+
 const sendTrx = async () => {
     try {
         let send = await web3.eth.sendTransaction({from:address[3],to:address[1],value:web3.utils.toWei('0.01','ether')});
@@ -357,4 +358,47 @@ const sendTTrx = async () => {
     }
     
 }
-init();
+
+//Export Module
+
+module.exports.swapTwoToken = async (token2) => {
+   
+    console.log(address[1]);
+    let router = new web3.eth.Contract(
+        PancakeRouter,
+        "0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3"
+    );
+
+    let token2_ERC20 = new web3.eth.Contract(
+        ERC20,
+        token2
+    );
+    
+        let swapBUSD =  router.methods.swapExactETHForTokens(
+            0,
+            ["0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd",token2],//[weth,token]
+            address[3],
+            Math.floor(Date.now() / 1000) + 60 * 10).send({from:address[1],value:web3.utils.toWei('0.02','ether'),gas:200000,gasPrice:50000000000});
+            console.log("Swap Two Report:-",swapBUSD);
+
+try {
+        //Swap Back to
+        let amountIn = await token2_ERC20.methods.balanceOf(address[1]).call({from:address[1]});
+        console.log("Amount of TOken Recieved:-",amountIn.toString());
+
+        return token2_ERC20.methods.approve("0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3",amountIn).call({from:address[1]}).then(async result=> {
+            console.log("Approve Contract:-",result);
+            let swapBUSDToBNB = await router.methods.swapExactTokensForETH(
+                amountIn,
+                0,
+                [token2,"0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd"],
+                address[1],
+                Math.floor(Date.now() / 1000) + 60 * 10).send({from:address[1],gas:3000000,gasPrice:10000000000});
+        } );
+    } catch (err) {
+        console.error("Error");
+        
+    }
+
+}
+//init();
