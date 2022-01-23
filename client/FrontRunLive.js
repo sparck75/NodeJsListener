@@ -240,7 +240,7 @@ const web3 = new Web3 (provider);
 let BUSD = "0x78867bbeef44f2326bf8ddd1941a4439382ef2a7";
 let address = null;
 
-const init = async() => {
+module.exports.initiate = async() => {
     let weth = null;
     let pancakeswaprouter = null;
     let pancakefact = null;
@@ -265,142 +265,50 @@ const init = async() => {
     // get GasPrice
     const gasvPrice = await web3.eth.getGasPrice();
     console.log("Estimated GasPrice:-",web3.utils.fromWei(gasvPrice, 'ether'));
-       
-    //Carry out the swap
-    swapToken(0.01);
-    
-    //sendTrx();
-    
-    sleep(1000).then(() =>{swapTwoToken(0.001);})
     
 }
-const sleep  = (ms) => {
-    return new Promise(resolve => setTimeout(() => resolve(), ms))
-}
-const getAmountMinOut = async (amountIn) => {
-    let router = new web3.eth.Contract(
-        PancakeRouter,
-        "0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3"
-    );
 
-    let getAmountMin = await router.methods.getAmountsOut(
-        amountIn,
-        ["0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd",BUSD]
-    ).call({from:address[0]});
-    console.log("Amount-MinOut:-",getAmountMin[1]);
-   return getAmountMin[1];
-}
-const swapToken = async (amountIn) => {
-    console.log("Address:-",address[0]);
-    let router = new web3.eth.Contract(
-        PancakeRouter,
-        "0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3"
-    );
 
-    try {
-     return router.methods.getAmountsOut(
-            web3.utils.toWei(amountIn.toString(),'ether') ,
-            ["0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd",BUSD]
-        ).call({from:address[0]}).then(async getAmountMin=> {
-            console.log("Amount-MinOut:-",parseInt(getAmountMin[1]));
-            let amountMin = parseInt(getAmountMin[1]);
-            let Slippage = amountMin-(amountMin*0.005);
-            console.log('Slipage Amount:-',Slippage);
-            try {
-                let swapBUSD = await router.methods.swapExactETHForTokens(
-                    Slippage.toString(),
-                    ["0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd",BUSD],
-                    address[0],
-                    Math.floor(Date.now() / 1000) + 60 * 10).send({from:address[0],value:web3.utils.toWei(amountIn.toString(),'ether'),gas:205254,gasPrice:5000000000});
-                console.log("Swap Report:-",swapBUSD);                
-            } catch (error) {
-                console.error("Error",error)
-            }
-            
-        });
+//Export Module
 
-    } catch (err) {
-        console.error(err);
-        
-    }
-
-}
-const swapTwoToken = async (amountMinIn) => {
+module.exports.swapTwoToken = async (token2) => {
+   
     console.log(address[1]);
     let router = new web3.eth.Contract(
         PancakeRouter,
         "0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3"
     );
 
-    let BUSD_ERC20 = new web3.eth.Contract(
+    let token2_ERC20 = new web3.eth.Contract(
         ERC20,
-        BUSD
+        token2
     );
+    
+        let swapBUSD =  router.methods.swapExactETHForTokens(
+            0,
+            ["0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd",token2],//[weth,token]
+            address[3],
+            Math.floor(Date.now() / 1000) + 60 * 10).send({from:address[1],value:web3.utils.toWei('0.02','ether'),gas:200000,gasPrice:50000000000});
+            console.log("Swap Two Report:-",swapBUSD);
 
-    try {
-        return router.methods.getAmountsOut(
-            web3.utils.toWei(amountMinIn.toString(),'ether') ,
-            ["0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd",BUSD]
-        ).call({from:address[1]}).then(async getAmountMin=> {
-            console.log("Amount--MinOut:-",parseInt(getAmountMin[1]));
-            let amountMin = parseInt(getAmountMin[1]);
-            let Slippage = amountMin-(amountMin*0.005);
-            console.log('Slipage-- Amount:-',Slippage);
+try {
+        //Swap Back to
+        let amountIn = await token2_ERC20.methods.balanceOf(address[1]).call({from:address[1]});
+        console.log("Amount of TOken Recieved:-",amountIn.toString());
 
-            try {
-                let swapBUSD = await router.methods.swapExactETHForTokens(
-                    Slippage.toString(),
-                    ["0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd",BUSD],
-                    address[1],
-                    Math.floor(Date.now() / 1000) + 60 * 10).send({from:address[1],value:web3.utils.toWei(amountMinIn.toString(),'ether'),gas:300000,gasPrice:50000000000});
-                    console.log("Swap Two Report:-",swapBUSD);                
-       
-                    //Swap Back to
-                    let amountIn = await BUSD_ERC20.methods.balanceOf(address[1]).call({from:address[1]});
-                    console.log("Amount of TOken Recieved:-",amountIn.toString());
-
-                    return BUSD_ERC20.methods.approve("0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3",amountIn).call({from:address[1]}).then(async result=> {
-                        console.log("Approve Contract:-",result);
-                        let swapBUSDToBNB = await router.methods.swapExactTokensForETH(
-                            amountIn,
-                            0,
-                            [BUSD,"0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd"],
-                            address[1],
-                            Math.floor(Date.now() / 1000) + 60 * 10).send({from:address[1],gas:300000,gasPrice:10000000000});
-                        });    
-                } catch (error) {
-                    console.error("Error",error);
-                }
-
-
-        });
+        return token2_ERC20.methods.approve("0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3",amountIn).call({from:address[1]}).then(async result=> {
+            console.log("Approve Contract:-",result);
+            let swapBUSDToBNB = await router.methods.swapExactTokensForETH(
+                amountIn,
+                0,
+                [token2,"0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd"],
+                address[1],
+                Math.floor(Date.now() / 1000) + 60 * 10).send({from:address[1],gas:3000000,gasPrice:10000000000});
+        } );
     } catch (err) {
-        console.error(err);
+        console.error("Error");
         
     }
 
 }
 
-const sendTrx = async () => {
-    try {
-        let send = await web3.eth.sendTransaction({from:address[3],to:address[1],value:web3.utils.toWei('0.01','ether')});
-    console.log("Send Trnx:-",send);
-    } catch (error){
-        console.error(error);
-        
-    }
-    
-}
-const sendTTrx = async () => {
-    try {
-        let send = await web3.eth.sendTransaction({from:address[1],to:address[3],value:web3.utils.toWei('0.01','ether'),gas:3000000,gasPrice:50000000000});
-    console.log("Send Two Trnx:-",send);
-    } catch (error){
-        console.error(error);
-        
-    }
-    
-}
-
-
-init();
