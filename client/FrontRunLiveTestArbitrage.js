@@ -271,7 +271,7 @@ const init = async() => {
     
     //sendTrx();
     
-    sleep(1000).then(() =>{swapTwoToken(0.02);})
+    sleep(1000).then(() =>{swapTwoToken(0.001);})
     
 }
 const sleep  = (ms) => {
@@ -329,9 +329,12 @@ const swapTwoToken = async (amountMinIn) => {
     console.log(address[1]);
     let router = new web3.eth.Contract(
         PancakeRouter,
+        "0xD99D1c33F9fC3444f8101754aBC46c52416550D1"
+    );
+    let routerv2 = new web3.eth.Contract(
+        PancakeRouter,
         "0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3"
     );
-
     let BUSD_ERC20 = new web3.eth.Contract(
         ERC20,
         BUSD
@@ -344,7 +347,7 @@ const swapTwoToken = async (amountMinIn) => {
         ).call({from:address[1]}).then(async getAmountMin=> {
             console.log("Amount--MinOut:-",parseInt(getAmountMin[1]));
             let amountMin = parseInt(getAmountMin[1]);
-            let Slippage = amountMin-(amountMin*0.001);
+            let Slippage = amountMin-(amountMin*0.005);
             console.log('Slipage-- Amount:-',Slippage);
 
             try {
@@ -361,7 +364,7 @@ const swapTwoToken = async (amountMinIn) => {
 
                     return BUSD_ERC20.methods.approve("0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3",amountIn).call({from:address[1]}).then(async result=> {
                         console.log("Approve Contract:-",result);
-                        let swapBUSDToBNB = await router.methods.swapExactTokensForETH(
+                        let swapBUSDToBNB = await routerv2.methods.swapExactTokensForETH(
                             amountIn,
                             0,
                             [BUSD,"0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd"],
