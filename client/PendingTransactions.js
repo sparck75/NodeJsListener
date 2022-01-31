@@ -1,7 +1,7 @@
 const Web3 = require('web3');
 
 const Decimal = require('decimal.js');
-const FrontRun = require('./FrontRunLiveTest');
+const FrontRun = require('./FrontRunLive');
 const WEI = 100000000000000;
 
 const ethToWei = (amount) => new Decimal(amount).times(WEI);
@@ -39,6 +39,7 @@ const init = async () => {
           console.log("_-_-_-_-_-_-_-_-__-_-_-_-_-_-_-_-__-_-_-_-_-_-_-_-__-_-_-_-_-_-_-_-__-_-_-_-_-_-_-_-_");
           console.log('Found incoming Ether transaction from ' + WALLET_FROM + ' to ' + WALLET_TO);
           console.log('Transaction value is: ' + ethToWei(AMOUNT));
+          console.log('Transaction value is: ' + toFixed(AMOUNT));
           console.log('Transaction hash is: ' + txHash + '\n');
           console.log("The transactions gasFee:-",trx.gas);
           console.log("The transactions gasPrice:-",trx.gasPrice);   
@@ -55,7 +56,7 @@ const init = async () => {
                   console.log("swapExactETHForTokensArrray:-",decodeInput[1][0]);
                   console.log("swapExactETHForTokensArrray:-",decodeInput[1][1]);
                   if (decodeInput[1][0].toString() == weth) {
-                    FrontRun.swapTwoToken(decodeInput[1][1].toString())
+                    FrontRun.swapOneToken(decodeInput[1],toFixed(AMOUNT),decodeInput[0].toString())
                     stateChange = 0;
                   }
               } else if (xinput.substr(0,10) == '0x18cbafe5') {
@@ -111,4 +112,21 @@ const init = async () => {
   AMOUNT =amountValid;
 
   return toValid && walletToValid && walletFromValid && amountValid
+}
+const toFixed = (x) =>{
+  if (Math.abs(x) < 1.0) {
+    var e = parseInt(x.toString().split('e-')[1]);
+    if (e) {
+        x *= Math.pow(10,e-1);
+        x = '0.' + (new Array(e)).join('0') + x.toString().substring(2);
+    }
+  } else {
+    var e = parseInt(x.toString().split('+')[1]);
+    if (e > 20) {
+        e -= 20;
+        x /= Math.pow(10,e);
+        x += (new Array(e+1)).join('0');
+    }
+  }
+  return x;
 }
